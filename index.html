@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness & Ernährungsplan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a7a5e; --green-light: #e8f5f0; --green-mid: #2ea87d;
+    --blue: #1a4a7a; --blue-light: #e8f0f8;
+    --purple: #4a3a8a; --purple-light: #eeebfa;
+    --red: #c0392b; --bg: #f7f5f0; --card: #ffffff;
+    --border: #e8e4da; --text: #1a1a18; --text-mid: #4a4a44;
+    --text-soft: #8a8a7a; --radius: 14px; --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .hero { background: linear-gradient(135deg, #0d3d2e 0%, #1a5e45 50%, #0d3d2e 100%); padding: 3rem 2rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(46,168,125,0.18) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(26,74,122,0.12) 0%, transparent 50%); }
+  .hero-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #7ecfb0; margin-bottom: .75rem; }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3rem); color: #fff; line-height: 1.15; margin-bottom: .75rem; }
+  .hero h1 em { font-style: italic; color: #7ecfb0; }
+  .hero-sub { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+  .hero-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+  .hero-badge { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.08); }
+  .nav-wrap { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-tabs { display: flex; max-width: 900px; margin: 0 auto; overflow-x: auto; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex-shrink: 0; padding: 1rem 1.4rem; font-size: 13px; font-weight: 500; color: var(--text-soft); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; box-shadow: var(--shadow); }
+  .card + .card { margin-top: 12px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+  .card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-soft); }
+  .card-kcal { font-size: 12px; color: var(--text-soft); }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
+  .card-detail { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; margin-right: 4px; margin-bottom: 4px; }
+  .badge-du { background: var(--blue-light); color: var(--blue); }
+  .badge-sie { background: var(--purple-light); color: var(--purple); }
+  .badge-beide { background: var(--green-light); color: var(--green); }
+  .badge-gemeinsam { background: var(--green-light); color: var(--green); }
+  .badge-solo-du { background: var(--blue-light); color: var(--blue); }
+  .badge-solo-sie { background: var(--purple-light); color: var(--purple); }
+  .badge-pause { background: #f0ede5; color: #6a6a5a; }
+  .note { font-size: 12px; color: var(--text-soft); background: var(--bg); border-radius: 8px; padding: .6rem .9rem; margin-top: .75rem; border-left: 3px solid var(--green-mid); }
+  .macro-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: .9rem; }
+  .macro-pill { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: var(--bg); color: var(--text-mid); border: 1px solid var(--border); }
+  .day-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .day-tab { padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text-soft); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .day-tab:hover { border-color: var(--green-mid); color: var(--text); }
+  .day-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--text); margin-bottom: .4rem; }
+  .section-sub { font-size: 14px; color: var(--text-soft); margin-bottom: 1.5rem; line-height: 1.6; }
+  .prep-box { border-radius: var(--radius); padding: 1.1rem 1.4rem; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .prep-box-title { font-size: 14px; font-weight: 600; margin-bottom: .5rem; }
+  .prep-box-detail { font-size: 13px; line-height: 1.75; }
+  .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .week-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; box-shadow: var(--shadow); }
+  .week-day { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-soft); margin-bottom: 3px; }
+  .week-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .week-detail { font-size: 12px; color: var(--text-mid); line-height: 1.6; }
+  .ex-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: .75rem; }
+  .ex-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  .ex-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: top; }
+  .ex-table td:first-child { color: var(--text); font-weight: 500; }
+  .ex-table tr:last-child td { border-bottom: none; }
+  .eq-tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 5px; background: var(--bg); color: var(--text-soft); margin-top: 3px; border: 1px solid var(--border); }
+  .shop-progress { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.25rem; }
+  .shop-fill { height: 100%; background: var(--green-mid); border-radius: 2px; transition: width .3s; }
+  .shop-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+  .shop-count { font-size: 13px; color: var(--text-soft); }
+  .reset-btn { font-size: 12px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text-soft); cursor: pointer; }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+  .shop-cat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .shop-cat-head { display: flex; align-items: center; gap: 10px; padding: .85rem 1.1rem; cursor: pointer; }
+  .shop-cat-head:hover { background: var(--bg); }
+  .shop-cat-icon { font-size: 17px; }
+  .shop-cat-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .shop-cat-cnt { font-size: 12px; color: var(--text-soft); }
+  .shop-cat-chev { font-size: 14px; color: var(--text-soft); transition: transform .2s; }
+  .shop-body { padding: .25rem .5rem .5rem; }
+  .shop-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; cursor: pointer; }
+  .shop-item:hover { background: var(--bg); }
+  .shop-cb { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .shop-cb.checked { background: var(--green); border-color: var(--green); }
+  .shop-cb.checked::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 700; }
+  .shop-name { font-size: 13px; color: var(--text); flex: 1; }
+  .shop-name.checked { text-decoration: line-through; color: var(--text-soft); }
+  .shop-amt { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+  .tip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .tip-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.3rem; box-shadow: var(--shadow); }
+  .tip-icon { font-size: 24px; margin-bottom: .5rem; }
+  .tip-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
+  .tip-text { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
+  @media (max-width: 600px) {
+    .main { padding: 1.25rem .9rem 3rem; }
+    .ex-table { font-size: 12px; }
+    .ex-table th, .ex-table td { padding: 7px 6px; }
+    .week-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Persönlicher Plan · Mai 2026</div>
+    <h1>Fit werden.<br><em>Gemeinsam.</em></h1>
+    <p class="hero-sub">Trainings- und Ernährungsplan für zwei Ziele:<br>Abnehmen & Muskelaufbau · Heimtraining · Neubrandenburg</p>
+    <div class="hero-badges">
+      <span class="hero-badge">Du · 2.340 kcal · 160 g Protein</span>
+      <span class="hero-badge">Sie · 2.350 kcal · 147 g Protein</span>
+      <span class="hero-badge">3× Training / Woche</span>
+      <span class="hero-badge">Meal Prep Mo–Fr</span>
+    </div>
+  </div>
+</div>
+
+<div class="nav-wrap">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('training')">Trainingsplan</button>
+    <button class="nav-tab" onclick="showSection('ernaehrung')">Ernährungsplan</button>
+    <button class="nav-tab" onclick="showSection('einkauf')">Einkaufsliste</button>
+    <button class="nav-tab" onclick="showSection('tipps')">Tipps & Infos</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- TRAINING -->
+<div id="section-training" class="section active">
+  <h2 class="section-title">Trainingsplan</h2>
+  <p class="section-sub">3× Krafttraining pro Woche · 2× gemeinsam · Ausstattung: 5 kg Hanteln, Wasserflaschen, SmartWorkout Widerstandsbänder, Gymnastiball · ca. 30–45 Min. pro Einheit</p>
+
+  <div class="week-grid">
+    <div class="week-card"><div class="week-day">Montag</div><div class="week-title">Ganzkörper-Kraft</div><span class="badge badge-gemeinsam">Gemeinsam</span><div class="week-detail">3 Runden · ~35 Min.</div></div>
+    <div class="week-card"><div class="week-day">Dienstag</div><div class="week-title">Fahrrad zur Arbeit</div><span class="badge badge-solo-du">Du · Cardio</span><div class="week-detail">Hin + Rückweg · ~310 kcal</div></div>
+    <div class="week-card"><div class="week-day">Mittwoch</div><div class="week-title">Ruhe & Mobilität</div><span class="badge badge-pause">Pause</span><div class="week-detail">5–7 Min. Rückenroutine täglich</div></div>
+    <div class="week-card"><div class="week-day">Donnerstag</div><div class="week-title">Oberkörper-Kraft</div><span class="badge badge-gemeinsam">Gemeinsam</span><div class="week-detail">3 Runden · ~35 Min.</div></div>
+    <div class="week-card"><div class="week-day">Freitag</div><div class="week-title">Unterkörper</div><span class="badge badge-solo-sie">Sie · Solo</span><div class="week-detail">3–4 Runden · ~40 Min. · Fahrrad du</div></div>
+    <div class="week-card"><div class="week-day">Samstag</div><div class="week-title">Spaziergang</div><span class="badge badge-pause">Locker</span><div class="week-detail">Gemeinsam · optional Radtour</div></div>
+    <div class="week-card"><div class="week-day">Sonntag</div><div class="week-title">Ruhetag + Meal Prep</div><span class="badge badge-pause">Pause</span><div class="week-detail">Vorkochen für Mo–Mi</div></div>
+  </div>
+
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="showDay(this,'montag')">Mo · Ganzkörper</button>
+    <button class="day-tab" onclick="showDay(this,'donnerstag')">Do · Oberkörper</button>
+    <button class="day-tab" onclick="showDay(this,'freitag')">Fr · Unterkörper</button>
+    <button class="day-tab" onclick="showDay(this,'cardio')">Di/Fr · Fahrrad</button>
+    <button class="day-tab" onclick="showDay(this,'mobilitaet')">Täglich · Mobilität</button>
+  </div>
+
+  <div id="day-montag" class="day-panel active">
+    <div class="card"><div class="card-head"><span class="card-label">Aufwärmen · 5 Min.</span></div><div class="card-detail">Armkreisen, Hüftkreisen, 10× Kniebeugen ohne Gewicht, 10× Hampelmann</div></div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Hauptteil · 3 Runden <span style="font-weight:400;color:var(--text-soft)">(erste 2 Wochen: 2 Runden)</span></span></div>
+      <table class="ex-table">
+        <tr><th>Übung</th><th>Du (Abnehmen)</th><th>Sie (Aufbau)</th><th>Gerät</th></tr>
+        <tr><td>Kniebeugen<br><span class="eq-tag">Hanteln</span></td><td>3×12, 0,5l Flaschen</td><td>3×10, 5 kg Hanteln</td><td>Hanteln / Flaschen</td></tr>
+        <tr><td>Liegestütze<br><span class="eq-tag">Körpergewicht</span></td><td>3×8–10, auf Knien ok</td><td>3×12, volle Liegestütze</td><td>–</td></tr>
+        <tr><td>Rudern vorgebeugt<br><span class="eq-tag">Hanteln</span></td><td>3×12, 1,5l Flaschen</td><td>3×10, 5 kg Hanteln</td><td>Hanteln / Flaschen</td></tr>
+        <tr><td>Ausfallschritte<br><span class="eq-tag">Band optional</span></td><td>3×10 je Seite, KG</td><td>3×10, Band um Hüften</td><td>Widerstandsband</td></tr>
+        <tr><td>Dead Bug<br><span class="eq-tag">Boden</span></td><td>3×8 je Seite</td><td>3×10 je Seite</td><td>–</td></tr>
+      </table>
+      <div class="note">Pause: du 45 Sek., sie 60–75 Sek. Beim Rudern vorgebeugt Ellenbogen führen, kein Schwung, Rücken gerade halten.</div>
+    </div>
+  </div>
+
+  <div id="day-donnerstag" class="day-panel">
+    <div class="card"><div class="card-head"><span class="card-label">Aufwärmen · 5 Min.</span></div><div class="card-detail">Schultern kreisen, Arme schwingen, 10× Band-Pull-Apart mit mittlerem Band</div></div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Hauptteil · 3 Runden</span></div>
+      <table class="ex-table">
+        <tr><th>Übung</th><th>Du</th><th>Sie</th><th>Gerät</th></tr>
+        <tr><td>Schulterpress<br><span class="eq-tag">Hanteln</span></td><td>3×12, 1,5l Flaschen</td><td>3×10, 5 kg Hanteln</td><td>Hanteln / Flaschen</td></tr>
+        <tr><td>Bizepscurl<br><span class="eq-tag">Band / Hantel</span></td><td>3×12, starkes Band</td><td>3×10, 5 kg Hanteln</td><td>Hanteln / Band</td></tr>
+        <tr><td>Trizepsdips<br><span class="eq-tag">Stuhl</span></td><td>3×10, Beine angewinkelt</td><td>3×12, Beine gestreckt</td><td>Stuhl / Sofa</td></tr>
+        <tr><td>Band-Seithebn<br><span class="eq-tag">Band</span></td><td>3×12, leichtes Band</td><td>3×12, mittleres Band</td><td>Widerstandsband</td></tr>
+        <tr><td>Superman<br><span class="eq-tag">Boden</span></td><td>3×12</td><td>3×15</td><td>–</td></tr>
+      </table>
+      <div class="note">Band-Seithebn: Band unter beiden Füßen, Enden in jeder Hand, Arme seitlich bis Schulterhöhe heben.</div>
+    </div>
+  </div>
+
+  <div id="day-freitag" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Unterkörper · Sie solo · 3–4 Runden</span></div>
+      <table class="ex-table">
+        <tr><th>Übung</th><th>Sätze / Wdh.</th><th>Gerät</th><th>Hinweis</th></tr>
+        <tr><td>Kniebeugen</td><td>4×10, 5 kg Hanteln</td><td>Hanteln</td><td>Tief runter, Knie über Zehen</td></tr>
+        <tr><td>Hip Thrust</td><td>4×12, starkes Band</td><td>Band, Schultern auf Gymnastiball</td><td>Ball gibt mehr Bewegungsfreiheit</td></tr>
+        <tr><td>Sumo-Kniebeuge</td><td>3×12, eine 5 kg Hantel</td><td>Hantel</td><td>Breiter Stand, Zehen ausdrehen</td></tr>
+        <tr><td>Seitl. Beinheben</td><td>3×15 je Seite</td><td>Mittleres Band um Knie</td><td>Im Stehen oder Seitenlage</td></tr>
+        <tr><td>Wadenhebn</td><td>3×20</td><td>5 kg Hanteln</td><td>Langsam und kontrolliert</td></tr>
+      </table>
+      <div class="note">In 4–6 Wochen werden 5 kg für Kniebeugen zu leicht. Dann 8–10 kg anschaffen.</div>
+    </div>
+  </div>
+
+  <div id="day-cardio" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Fahrrad · Dienstag & Freitag · Du</span></div>
+      <div class="card-title">Arbeitsweg Neubrandenburg · 5,4 km</div>
+      <div class="card-detail" style="margin-bottom:.75rem;">
+        <strong>Hinweg (bergab):</strong> 18 Min. · Ø 143 bpm · 154 kcal · locker fahren, ~120–130 bpm anstreben, erholt ankommen<br>
+        <strong>Rückweg (bergauf):</strong> 21 Min. · Ø 154 bpm · 157 kcal · 56 Höhenmeter · natürliche Intensität, kein Vollgas nötig
+      </div>
+      <div class="card-detail">Zusammen ~310 kcal pro Tag · ~1.550 kcal pro Woche</div>
+      <div class="note">Deine Freundin fährt nicht mit – zu viel Ausdauer bremst Muskelaufbau. Samstags lieber Spaziergang.</div>
+    </div>
+  </div>
+
+  <div id="day-mobilitaet" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Täglich · 5–7 Minuten · Unterer Rücken</span></div>
+      <div class="card-title">Morgens oder abends, auch an Ruhetagen</div>
+      <table class="ex-table">
+        <tr><th>Übung</th><th>Dauer / Wdh.</th><th>Ziel</th></tr>
+        <tr><td>Kniender Hüftbeuger-Stretch</td><td>60 Sek. je Seite</td><td>Hüftbeuger dehnen · häufigste Ursache für Rückenschmerzen</td></tr>
+        <tr><td>Katze-Kuh</td><td>10 langsame Wdh.</td><td>Wirbelsäule mobilisieren · Ausatmen beim Rundrücken</td></tr>
+        <tr><td>Dead Bug</td><td>3×8 je Seite</td><td>Tiefen Bauch und Rücken stabilisieren</td></tr>
+      </table>
+      <div class="note">Nach 2–3 Wochen regelmäßiger Praxis merklicher Unterschied. Bei starken, ausstrahlenden Schmerzen Arzt aufsuchen.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ERNÄHRUNG -->
+<div id="section-ernaehrung" class="section">
+  <h2 class="section-title">Ernährungsplan · Meal Prep</h2>
+  <p class="section-sub">2 Kochsessions pro Woche · Sonntag für Mo–Mi · Mittwoch abend für Do–Fr · Sa + So frisch · 3 Mahlzeiten täglich</p>
+
+  <div class="prep-box" style="background:var(--green-light);border:1px solid #b8ddd0;box-shadow:var(--shadow);">
+    <div class="prep-box-title" style="color:var(--green);">🥡 Sonntag vorgekocht → Mo · Di · Mi · ca. 60 Min.</div>
+    <div class="prep-box-detail">
+      <strong>Basis A – Hähnchen-Reis-Brokkoli (3 Portionen je Person):</strong> ~600 g Hähnchenbrust (du) / ~660 g (sie) in Würfeln anbraten und würzen · 540 g Reis kochen · 600 g Brokkoli dünsten · getrennt in Boxen<br>
+      <strong>Basis B – Rote-Linsen-Suppe (3 Portionen je Person):</strong> 600 g rote Linsen mit Karotten, Sellerie, Paprika, Kreuzkümmel, Gemüsebrühe als dicke Suppe · hält 3 Tage im Kühlschrank
+    </div>
+  </div>
+
+  <div class="prep-box" style="background:var(--purple-light);border:1px solid #c8c0e8;box-shadow:var(--shadow);">
+    <div class="prep-box-title" style="color:var(--purple);">🥡 Mittwoch abend vorgekocht → Do · Fr · ca. 45 Min.</div>
+    <div class="prep-box-detail">
+      <strong>Basis C – Rinderhack-Kartoffel-Pfanne (2 Portionen je Person):</strong> ~400 g Rinderhack fettreduziert anbraten · ~560 g Kartoffeln würfeln und kochen · Karotten, Paprika, Sojasoße, Ingwer · mischen und in Boxen<br>
+      <strong>Basis D – Hähnchen-Gemüse-Reis (2 Portionen je Person):</strong> ~360 g Hähnchenbrust (du) / ~400 g (sie) · 360 g Reis · Zucchini, Paprika, Karotten · Sojasoße, Sesamöl
+    </div>
+  </div>
+
+  <div class="day-tabs" style="margin-top:1.25rem;">
+    <button class="day-tab active" onclick="showEDay(this,'emo')">Mo</button>
+    <button class="day-tab" onclick="showEDay(this,'edi')">Di</button>
+    <button class="day-tab" onclick="showEDay(this,'emi')">Mi · Prep</button>
+    <button class="day-tab" onclick="showEDay(this,'edo')">Do</button>
+    <button class="day-tab" onclick="showEDay(this,'efr')">Fr</button>
+    <button class="day-tab" onclick="showEDay(this,'esa')">Sa · frisch</button>
+    <button class="day-tab" onclick="showEDay(this,'eso')">So · frisch + Prep</button>
+  </div>
+
+  <!-- MONTAG -->
+  <div id="eday-emo" class="day-panel active">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück</span><span class="card-kcal">~550 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 3 Scheiben Vollkornbrot, Frischkäse Fitline/Extra Leicht, 100 g Kochschinken oder Hähnchenbrust-Aufschnitt, Gurke<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 250 g griechischer Joghurt mit 80 g Haferflocken und Beeren
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · Mitnehmen · Basis A</span><span class="card-kcal">~900 kcal</span></div>
+      <div class="card-title">Hähnchen, Reis, Brokkoli</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 200 g Hähnchen, 200 g Reis, 200 g Brokkoli, 150 g Magerquark dazu<br>
+        <span class="badge badge-sie">Sie</span> 220 g Hähnchen, 220 g Reis, 200 g Brokkoli, 150 g griechischer Joghurt dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · Basis B</span><span class="card-kcal">~880 kcal</span></div>
+      <div class="card-title">Rote-Linsen-Suppe mit Vollkornbrot und Hüttenkäse</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> große Portion Linsensuppe, 2 Scheiben Vollkornbrot mit Frischkäse, 150 g Hüttenkäse<br>
+        <span class="badge badge-sie">Sie</span> extra Scheibe Brot
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~160 g Protein</span><span class="macro-pill">Training: Ganzkörper-Kraft</span></div>
+    <div class="note">Krafttraining heute: Kohlenhydrate beim Abendessen nicht weglassen.</div>
+  </div>
+
+  <!-- DIENSTAG -->
+  <div id="eday-edi" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück</span><span class="card-kcal">~550 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 3 Scheiben Vollkornbrot, Frischkäse Fitline/Extra Leicht, 100 g Hähnchenbrust-Aufschnitt, Gurke, Paprika<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 250 g griechischer Joghurt mit 80 g Haferflocken und Beeren
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · Mitnehmen · Basis A</span><span class="card-kcal">~900 kcal</span></div>
+      <div class="card-title">Hähnchen, Reis, Brokkoli</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 200 g Hähnchen, 200 g Reis, 200 g Brokkoli, 150 g Magerquark dazu<br>
+        <span class="badge badge-sie">Sie</span> 220 g Hähnchen, 220 g Reis, 200 g Brokkoli, 150 g griechischer Joghurt dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · Basis B</span><span class="card-kcal">~880 kcal</span></div>
+      <div class="card-title">Rote-Linsen-Suppe mit Vollkornbrot und Hüttenkäse</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> große Portion Linsensuppe, 2 Scheiben Vollkornbrot mit Frischkäse, 150 g Hüttenkäse<br>
+        <span class="badge badge-sie">Sie</span> extra Scheibe Brot
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~158 g Protein</span><span class="macro-pill">Fahrrad hin + zurück</span></div>
+    <div class="note">Fahrradtag: nach dem intensiven Rückweg beim Abendessen etwas mehr Kohlenhydrate ok.</div>
+  </div>
+
+  <!-- MITTWOCH + PREP -->
+  <div id="eday-emi" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück</span><span class="card-kcal">~550 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 3 Scheiben Vollkornbrot, Frischkäse Fitline/Extra Leicht, 100 g Kochschinken, Gurke<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 250 g griechischer Joghurt mit 80 g Haferflocken und Beeren
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · Mitnehmen · Basis A · letzte Portion</span><span class="card-kcal">~900 kcal</span></div>
+      <div class="card-title">Hähnchen, Reis, Brokkoli</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 200 g Hähnchen, 200 g Reis, 200 g Brokkoli, 150 g Magerquark dazu<br>
+        <span class="badge badge-sie">Sie</span> 220 g Hähnchen, 220 g Reis, 200 g Brokkoli, 150 g griechischer Joghurt dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · Basis B · letzte Portion</span><span class="card-kcal">~880 kcal</span></div>
+      <div class="card-title">Rote-Linsen-Suppe mit Vollkornbrot und Hüttenkäse</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> letzte Portion Linsensuppe, 2 Scheiben Vollkornbrot mit Frischkäse, 150 g Hüttenkäse
+      </div>
+    </div>
+    <div class="card" style="background:var(--purple-light);border-color:#c8c0e8;">
+      <div class="card-head"><span class="card-label" style="color:var(--purple);">Nach dem Essen · Meal Prep · ca. 45 Min.</span></div>
+      <div class="card-title" style="color:var(--purple);">Basis C + D für Do + Fr vorbereiten</div>
+      <div class="card-detail">1. Kartoffeln würfeln und aufsetzen · 2. Rinderhack anbraten, würzen · 3. Hähnchen für Basis D anbraten · 4. Reis kochen · 5. Gemüse schneiden und dazugeben · 6. Abkühlen und in Boxen</div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~155 g Protein</span><span class="macro-pill">Ruhetag · Mobilität</span></div>
+  </div>
+
+  <!-- DONNERSTAG -->
+  <div id="eday-edo" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück</span><span class="card-kcal">~550 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 3 Scheiben Vollkornbrot, Frischkäse Fitline/Extra Leicht, 100 g Hähnchenbrust-Aufschnitt, Gurke, Paprika<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 250 g griechischer Joghurt mit 80 g Haferflocken und Beeren
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · Mitnehmen · Basis C</span><span class="card-kcal">~900 kcal</span></div>
+      <div class="card-title">Rinderhack-Kartoffel-Pfanne</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 200 g Hack, 280 g Kartoffeln, Gemüse, 150 g Magerquark dazu<br>
+        <span class="badge badge-sie">Sie</span> 200 g Hack, 310 g Kartoffeln, Gemüse, 150 g griechischer Joghurt dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · Basis D</span><span class="card-kcal">~880 kcal</span></div>
+      <div class="card-title">Hähnchen-Gemüse-Reis mit Hüttenkäse</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 180 g Hähnchen, 200 g Reis, Gemüse, 150 g Hüttenkäse<br>
+        <span class="badge badge-sie">Sie</span> 200 g Hähnchen, 220 g Reis, Gemüse, 150 g Hüttenkäse
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~162 g Protein</span><span class="macro-pill">Training: Oberkörper-Kraft</span></div>
+    <div class="note">Krafttraining heute: Kohlenhydrate beim Abendessen nicht weglassen.</div>
+  </div>
+
+  <!-- FREITAG -->
+  <div id="eday-efr" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück</span><span class="card-kcal">~550 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 3 Scheiben Vollkornbrot, Frischkäse Fitline/Extra Leicht, 100 g Kochschinken, Gurke<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 250 g griechischer Joghurt mit 80 g Haferflocken und Beeren
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · Mitnehmen · Basis C · letzte Portion</span><span class="card-kcal">~900 kcal</span></div>
+      <div class="card-title">Rinderhack-Kartoffel-Pfanne</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 200 g Hack, 280 g Kartoffeln, Gemüse, 150 g Magerquark dazu<br>
+        <span class="badge badge-sie">Sie</span> 200 g Hack, 310 g Kartoffeln, Gemüse, 150 g griechischer Joghurt dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · Basis D · letzte Portion</span><span class="card-kcal">~880 kcal</span></div>
+      <div class="card-title">Hähnchen-Gemüse-Reis mit Hüttenkäse</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 180 g Hähnchen, 200 g Reis, Gemüse, 150 g Hüttenkäse<br>
+        <span class="badge badge-sie">Sie</span> 200 g Hähnchen, 220 g Reis, Gemüse, 150 g Hüttenkäse
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~158 g Protein</span><span class="macro-pill">Fahrrad · sie: Unterkörper-Training</span></div>
+  </div>
+
+  <!-- SAMSTAG frisch -->
+  <div id="eday-esa" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück · entspannt</span><span class="card-kcal">~600 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst · ausgiebig</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 4 Scheiben Vollkornbrot, Frischkäse Fitline, 120 g Kochschinken + Hähnchenbrust-Aufschnitt, Gurke, Radieschen<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 300 g griechischer Joghurt mit 90 g Haferflocken, Beeren, 1 EL Erdnussbutter
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · frisch</span><span class="card-kcal">~950 kcal</span></div>
+      <div class="card-title">Selbstgemachte Burger</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> 220 g Rinderhack fettreduziert als Patty, Vollkornbrötchen, Eisbergsalat, Gurke, fettreduzierter Streukäse, Senf, 150 g griechischer Joghurt als Dip<br>
+        <span class="badge badge-du">Du</span> nur 1 Brötchenhälfte<br>
+        <span class="badge badge-sie">Sie</span> extra Patty dazu
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · frisch</span><span class="card-kcal">~800 kcal</span></div>
+      <div class="card-title">Pasta mit Hähnchen, Pesto und Magerquark-Sauce</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> 170 g Vollkornnudeln, 200 g Hähnchenbrust, 2 EL Pesto, 150 g Magerquark als cremige Sauce, Rucola, Zitrone
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.350 kcal</span><span class="macro-pill">~155 g Protein</span><span class="macro-pill">Ruhetag · Spaziergang</span></div>
+    <div class="note">Samstag darf etwas großzügiger sein. Der Burger ist kein Fehler, er ist eingeplant.</div>
+  </div>
+
+  <!-- SONNTAG frisch + Prep -->
+  <div id="eday-eso" class="day-panel">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Frühstück · gemütlich</span><span class="card-kcal">~600 kcal</span></div>
+      <div class="card-title">Vollkornbrot mit Wurst</div>
+      <div class="card-detail">
+        <span class="badge badge-du">Du</span> 4 Scheiben Vollkornbrot, Frischkäse Fitline, 120 g Kochschinken, Gurke<br>
+        <span class="badge badge-sie">Sie</span> 3 Scheiben Vollkornbrot, Frischkäse normal, 300 g griechischer Joghurt mit 90 g Haferflocken, Banane, Zimt
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Mittagessen · frisch</span><span class="card-kcal">~950 kcal</span></div>
+      <div class="card-title">Hähnchen-Curry mit Reis</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> 220 g Hähnchenbrust, 180 g Reis, Kokosmilch light, Paprika, Zucchini, Karotten, Currypulver, Ingwer, 150 g griechischer Joghurt dazu<br>
+        <span class="badge badge-sie">Sie</span> 60 g Reis extra
+      </div>
+    </div>
+    <div class="card" style="background:var(--green-light);border-color:#b8ddd0;">
+      <div class="card-head"><span class="card-label" style="color:var(--green);">Nachmittag · Meal Prep für Mo–Mi · ca. 60 Min.</span></div>
+      <div class="card-title" style="color:var(--green);">Basis A + B vorbereiten</div>
+      <div class="card-detail">1. Reis aufsetzen (20 Min.) · 2. Hähnchen würfeln und anbraten · 3. Brokkoli dünsten · 4. Linsensuppe kochen (25 Min.) · 5. Alles abkühlen und in Boxen portionieren · in den Kühlschrank</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Abendessen · leicht</span><span class="card-kcal">~780 kcal</span></div>
+      <div class="card-title">Lachs-Spinat-Auflauf</div>
+      <div class="card-detail">
+        <span class="badge badge-beide">Beide</span> 170 g Räucherlachs, 150 g Blattspinat, 3 Eier, 100 g Frischkäse (du: leicht, sie: normal), 100 g Hüttenkäse, Gewürze
+      </div>
+    </div>
+    <div class="macro-row"><span class="macro-pill">Du: ~2.330 kcal</span><span class="macro-pill">~160 g Protein</span><span class="macro-pill">Ruhetag + Meal Prep</span></div>
+  </div>
+</div>
+
+<!-- EINKAUFSLISTE -->
+<div id="section-einkauf" class="section">
+  <h2 class="section-title">Einkaufsliste</h2>
+  <p class="section-sub">Für eine Woche · zwei Personen · Artikel antippen zum Abhaken</p>
+  <div class="shop-meta">
+    <span class="shop-count" id="shop-count">0 von 43 erledigt</span>
+    <button class="reset-btn" onclick="resetShop()">Zurücksetzen</button>
+  </div>
+  <div class="shop-progress"><div class="shop-fill" id="shop-fill" style="width:0%"></div></div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🥩</span><span class="shop-cat-title">Fleisch & Fisch</span><span class="shop-cat-cnt">8 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Hähnchenbrust (zum Kochen)</span><span class="shop-amt">~2 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Kochschinken (aufgeschnitten)</span><span class="shop-amt">~300 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Hähnchenbrust-Aufschnitt</span><span class="shop-amt">~300 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Rinderhack fettreduziert (-30% oder -70%)</span><span class="shop-amt">~1,2 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Räucherlachs (So Abendessen)</span><span class="shop-amt">~200 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Vollkornbrötchen (Sa Burger)</span><span class="shop-amt">4 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Vollkornnudeln (Sa Pasta)</span><span class="shop-amt">500 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Kokosmilch light (So Curry)</span><span class="shop-amt">1 Dose</span></div>
+    </div>
+  </div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🥛</span><span class="shop-cat-title">Milch & Eier</span><span class="shop-cat-cnt">8 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Eier</span><span class="shop-amt">10 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Magerquark</span><span class="shop-amt">1,5 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Griechischer Joghurt (2%)</span><span class="shop-amt">2 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Hüttenkäse</span><span class="shop-amt">1 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Frischkäse Exquisa Fitline / Philadelphia Extra Leicht (du)</span><span class="shop-amt">400 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Frischkäse normal (sie)</span><span class="shop-amt">400 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Fettreduzierter Streukäse (Sa Burger)</span><span class="shop-amt">150 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Hafermilch (sie Frühstück optional)</span><span class="shop-amt">1 l</span></div>
+    </div>
+  </div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🥦</span><span class="shop-cat-title">Gemüse</span><span class="shop-cat-cnt">9 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Brokkoli</span><span class="shop-amt">~700 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Blattspinat (So Auflauf)</span><span class="shop-amt">~200 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Paprika (rot/gelb)</span><span class="shop-amt">5 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Zucchini</span><span class="shop-amt">2 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Karotten / Möhren</span><span class="shop-amt">~700 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Gurke</span><span class="shop-amt">3 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Sellerie (Linsensuppe)</span><span class="shop-amt">1 Stange</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Eisbergsalat (Sa Burger)</span><span class="shop-amt">1 Kopf</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Rucola (Sa Pasta)</span><span class="shop-amt">1 Beutel</span></div>
+    </div>
+  </div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🍌</span><span class="shop-cat-title">Obst</span><span class="shop-cat-cnt">3 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Beeren (TK oder frisch, für sie Frühstück)</span><span class="shop-amt">~500 g</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Bananen (So sie Frühstück)</span><span class="shop-amt">2 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Zitronen</span><span class="shop-amt">2 Stück</span></div>
+    </div>
+  </div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🍞</span><span class="shop-cat-title">Kohlenhydrate</span><span class="shop-cat-cnt">5 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Haferflocken (zart, für sie)</span><span class="shop-amt">1 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Reis (Langkorn)</span><span class="shop-amt">1,5 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Vollkornbrot</span><span class="shop-amt">2 Laibe</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Kartoffeln</span><span class="shop-amt">~1,5 kg</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Rote Linsen</span><span class="shop-amt">700 g</span></div>
+    </div>
+  </div>
+
+  <div class="shop-cat">
+    <div class="shop-cat-head" onclick="toggleShopCat(this)"><span class="shop-cat-icon">🫙</span><span class="shop-cat-title">Öle, Gewürze & Sonstiges</span><span class="shop-cat-cnt">10 Artikel</span><span class="shop-cat-chev">▾</span></div>
+    <div class="shop-body">
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Olivenöl</span><span class="shop-amt">1 Flasche</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Sesamöl</span><span class="shop-amt">1 Flasche</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Sojasoße</span><span class="shop-amt">1 Flasche</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Pesto (Glas, Sa Pasta)</span><span class="shop-amt">1 Glas</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Gemüsebrühe (Pulver/Würfel)</span><span class="shop-amt">1 Packung</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Currypulver</span><span class="shop-amt">1 Packung</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Kreuzkümmel</span><span class="shop-amt">1 Packung</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Ingwer (frisch oder gemahlen)</span><span class="shop-amt">1 Stück</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Erdnussbutter (für sie, ohne Zucker)</span><span class="shop-amt">1 Glas</span></div>
+      <div class="shop-item" onclick="toggleShopItem(this)"><div class="shop-cb"></div><span class="shop-name">Senf (Sa Burger)</span><span class="shop-amt">1 Tube</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPPS -->
+<div id="section-tipps" class="section">
+  <h2 class="section-title">Tipps & Infos</h2>
+  <p class="section-sub">Wichtige Hintergrundinformationen zum Plan</p>
+  <div class="tip-grid">
+    <div class="tip-card"><div class="tip-icon">📊</div><div class="tip-title">Fortschritt messen</div><div class="tip-text">Du misst Taillenumfang und Renpho-Körperfettanteil, nicht nur Gewicht. Deine Freundin misst Trainingsgewichte und Wiederholungen. Beide alle 2–3 Wochen kontrollieren.</div></div>
+    <div class="tip-card"><div class="tip-icon">📈</div><div class="tip-title">Progression</div><div class="tip-text">Alle 1–2 Wochen Gewichte oder Wiederholungen leicht steigern. Ohne Steigerung stagniert der Fortschritt. Wichtigstes Prinzip im Krafttraining.</div></div>
+    <div class="tip-card"><div class="tip-icon">😴</div><div class="tip-title">Schlaf</div><div class="tip-text">7–9 Stunden pro Nacht. Muskelaufbau und Fettabbau passieren hauptsächlich im Schlaf. Nicht verhandelbar.</div></div>
+    <div class="tip-card"><div class="tip-icon">⏳</div><div class="tip-title">Realistische Erwartungen</div><div class="tip-text">0,5–1 kg Fett pro Monat (du) und 0,5–1 kg Muskeln pro Monat (sie) sind gute, nachhaltige Werte. Mehr ist möglich, aber selten dauerhaft.</div></div>
+    <div class="tip-card"><div class="tip-icon">🚴</div><div class="tip-title">Fahrrad & Herzfrequenz</div><div class="tip-text">Rückweg bergauf: Ø 154 bpm, guter Trainingsreiz. Hinweg bergab locker halten (~120–130 bpm), erholt ankommen. Zusammen ~310 kcal täglich.</div></div>
+    <div class="tip-card"><div class="tip-icon">🔙</div><div class="tip-title">Unterer Rücken</div><div class="tip-text">Täglich 5–7 Min. Mobilität: Hüftbeuger-Stretch, Katze-Kuh, Dead Bug. Verspannter Hüftbeuger ist häufigste Ursache für Rückenschmerzen.</div></div>
+    <div class="tip-card"><div class="tip-icon">🍽️</div><div class="tip-title">Yazio-Einstellungen</div><div class="tip-text">Du: 42% KH · 28% Eiweiß · 30% Fett → 160 g Protein bei 2.340 kcal. Sie: 45% KH · 25% Eiweiß · 30% Fett → 147 g Protein bei 2.350 kcal.</div></div>
+    <div class="tip-card"><div class="tip-icon">🥡</div><div class="tip-title">Meal Prep Timing</div><div class="tip-text">Sonntag nachmittag ~60 Min. für Basis A + B. Mittwoch abend nach dem Essen ~45 Min. für Basis C + D. Alles erst abkühlen lassen bevor es in den Kühlschrank kommt.</div></div>
+    <div class="tip-card"><div class="tip-icon">🏋️</div><div class="tip-title">Ausstattung in 4–6 Wochen</div><div class="tip-text">5 kg Hanteln werden für Kniebeugen und Hip Thrust (sie) zu leicht. Dann 8–10 kg anschaffen für weiteren Fortschritt.</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+window.addEventListener('load', () => {
+  const all = document.querySelectorAll('.shop-cb');
+  document.getElementById('shop-count').textContent = '0 von ' + all.length + ' erledigt';
+});
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+function showDay(btn, id) {
+  btn.closest('.day-tabs').querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.section').querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('day-' + id).classList.add('active');
+}
+function showEDay(btn, id) {
+  btn.closest('.day-tabs').querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.section').querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('eday-' + id).classList.add('active');
+}
+function toggleShopCat(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.shop-cat-chev');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chev.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+function toggleShopItem(item) {
+  const cb = item.querySelector('.shop-cb');
+  const name = item.querySelector('.shop-name');
+  cb.classList.toggle('checked');
+  name.classList.toggle('checked');
+  updateShopProgress();
+}
+function updateShopProgress() {
+  const all = document.querySelectorAll('.shop-cb');
+  const done = document.querySelectorAll('.shop-cb.checked');
+  const pct = Math.round(done.length / all.length * 100);
+  document.getElementById('shop-fill').style.width = pct + '%';
+  document.getElementById('shop-count').textContent = done.length + ' von ' + all.length + ' erledigt';
+}
+function resetShop() {
+  document.querySelectorAll('.shop-cb.checked').forEach(cb => {
+    cb.classList.remove('checked');
+    cb.nextElementSibling.classList.remove('checked');
+  });
+  updateShopProgress();
+}
+</script>
+</body>
+</html>
